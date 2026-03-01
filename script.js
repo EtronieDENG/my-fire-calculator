@@ -1,13 +1,11 @@
 let currentTab = 'acc', myChart = null;
 
-// 1. 切换页签：同步更新 UI 文案 [cite: 43, 58]
 function switchTab(type) {
     currentTab = type;
     document.getElementById('tab-acc').className = type === 'acc' ? 'active' : '';
     document.getElementById('tab-end').className = type === 'end' ? 'active' : '';
     document.getElementById('saveItem').style.display = type === 'acc' ? 'flex' : 'none';
     
-    // 动态切换结果区的标题文案
     const mainResLabel = document.querySelector('.result-highlight .res-sub');
     if (type === 'acc') {
         document.getElementById('expenseLabel').innerText = '退休后年开销 (元)';
@@ -26,7 +24,6 @@ function resetAll() {
     if(confirm("确定要清空重置所有数据吗？")) location.reload();
 }
 
-// 2. 动态添加行逻辑 [cite: 33, 51, 66]
 function addRow(type) {
     const div = document.createElement('div');
     div.className = 'dynamic-row';
@@ -61,10 +58,10 @@ function calculatePortfolio() {
     }
 }
 
-// 3. 核心计算逻辑 [cite: 38, 56, 99]
 function runCoreCalculation() {
-    const nomVal = document.getElementById('nominalReturn').value;
-    if (!nomVal) { alert("请在投资设定中填写「名义收益率」"); return; }
+    // 修改点：不再校验 nomVal 必填，默认取 0
+    const rawNom = document.getElementById('nominalReturn').value;
+    const nomVal = rawNom === "" ? 0 : parseFloat(rawNom);
 
     const current = parseFloat(document.getElementById('currentSavings').value) || 0;
     const annualSave = parseFloat(document.getElementById('annualSavings').value) || 0;
@@ -72,16 +69,15 @@ function runCoreCalculation() {
     const inf = parseFloat(document.getElementById('inflationRate').value) || 0;
     const swr = parseFloat(document.getElementById('swrRange').value) / 100;
     
-    // 计算逻辑区分
     if (currentTab === 'acc') {
         const targetCapital = baseExp / swr;
         document.getElementById('targetAmount').innerText = `¥${Math.round(targetCapital).toLocaleString()}`;
     } else {
-        // 耐力模式下，上方显示当前本金金额
         document.getElementById('targetAmount').innerText = `¥${Math.round(current).toLocaleString()}`;
     }
 
-    const realAnnual = (1 + parseFloat(nomVal)/100) / (1 + inf/100) - 1;
+    // 抗通胀实际收益率计算
+    const realAnnual = (1 + nomVal/100) / (1 + inf/100) - 1;
     const realMonth = Math.pow(1 + realAnnual, 1/12) - 1;
 
     const sS = Array.from(document.getElementsByClassName('st-start')).map(i => parseInt(i.value) || 0);
@@ -148,10 +144,11 @@ function renderUI(base, act) {
 }
 
 function updateRealRateHint() {
-    const nom = parseFloat(document.getElementById('nominalReturn').value);
+    const raw = document.getElementById('nominalReturn').value;
+    const nom = raw === "" ? 0 : parseFloat(raw);
     const inf = parseFloat(document.getElementById('inflationRate').value) || 0;
     const label = document.getElementById('realRateLabel');
-    if (isNaN(nom)) { label.innerText = ""; return; }
+    // 如果没有输入，显示默认状态下的实际收益率（即 -通胀率）
     const real = ((1 + nom/100) / (1 + inf/100) - 1) * 100;
     label.innerText = `(实际增值: ${real.toFixed(2)}%)`;
 }
