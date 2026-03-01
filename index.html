@@ -2,55 +2,137 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIRE 计划计算器 (MVP)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FIRE 计划测算工具 v3.0</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🔥 FIRE 计划计算器</h1>
-        
-        <div class="tabs">
-            <button onclick="showCalc('accumulation')" id="tab-acc" class="active">积累计算器</button>
-            <button onclick="showCalc('endurance')" id="tab-end">耐力计算器</button>
-        </div>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-top">
+                <h1>FIRE 计划测算</h1>
+                <button onclick="resetAll()" class="btn-reset-active">清空重置</button>
+            </div>
+            <div class="tab-switcher">
+                <button onclick="switchTab('acc')" id="tab-acc" class="active">积累计算</button>
+                <button onclick="switchTab('end')" id="tab-end">耐力计算</button>
+            </div>
+        </header>
 
-        <div id="accumulation-calc" class="calc-section">
-            <div class="input-group">
-                <label>当前总储蓄 (元)</label>
-                <input type="number" id="acc-current" value="100000">
-                <label>每月储蓄额 (元)</label>
-                <input type="number" id="acc-monthly" value="5000">
-                <label>目标退休后年开销 (元)</label>
-                <input type="number" id="acc-expense" value="120000">
-                <label>预期收益率 (%)</label>
-                <input type="number" id="acc-rate" value="6">
-            </div>
-            <button onclick="calculateAccumulation()" class="main-btn">算出达成时间</button>
-            <div id="acc-result" class="result-area" style="display:none;">
-                <p>目标储蓄额：<span id="acc-target-out">0</span> 元</p>
-                <p>预计达成所需时间：<strong><span id="acc-years-out">0</span> 年</strong></p>
-            </div>
-        </div>
+        <main class="content">
+            <section class="card">
+                <div class="card-header">🏦 基础财务数据</div>
+                <div class="input-grid">
+                    <div class="input-item">
+                        <label>当前总储蓄 (元)</label>
+                        <input type="number" id="currentSavings" placeholder="0">
+                    </div>
+                    <div class="input-item" id="saveItem">
+                        <label>年新增储蓄 (元)</label>
+                        <input type="number" id="annualSavings" placeholder="0">
+                    </div>
+                    <div class="input-item">
+                        <label id="expenseLabel">退休后年开销 (元)</label>
+                        <input type="number" id="annualExpense" placeholder="0">
+                    </div>
+                </div>
+            </section>
 
-        <div id="endurance-calc" class="calc-section" style="display:none;">
-            <div class="input-group">
-                <label>当前总储蓄 (元)</label>
-                <input type="number" id="end-current" value="2000000">
-                <label>退休后年开销 (元)</label>
-                <input type="number" id="end-expense" value="120000">
-                <label>预期收益率 (%)</label>
-                <input type="number" id="end-rate" value="5">
-            </div>
-            <button onclick="calculateEndurance()" class="main-btn">看我的钱能撑多久</button>
-            <div id="end-result" class="result-area" style="display:none;">
-                <p>你的储蓄预计可以支撑：<strong><span id="end-years-out">0</span> 年</strong></p>
-            </div>
-        </div>
+            <section class="card">
+                <div class="card-header">📈 投资收益与通胀设定</div>
+                <div class="input-grid">
+                    <div class="input-item">
+                        <label>名义收益率 (%) <span id="realRateLabel" class="hint-red"></span></label>
+                        <input type="number" id="nominalReturn" placeholder="必填">
+                    </div>
+                    <div class="input-item">
+                        <label>预期通胀率 (%)</label>
+                        <input type="number" id="inflationRate" value="3">
+                    </div>
+                </div>
 
-        <div class="footer">
-            <p>注：默认通胀率 3%，提取率 4% [cite: 139]</p>
-        </div>
+                <div class="portfolio-tool">
+                    <p class="section-subtitle">通过资产配置计算平均收益率</p>
+                    <div id="asset-list">
+                        <div class="asset-row">
+                            <input type="text" class="asset-name" placeholder="资产名">
+                            <input type="number" class="asset-amount" placeholder="金额">
+                            <input type="number" class="asset-rate" placeholder="收益%">
+                        </div>
+                    </div>
+                    <div class="asset-action-btns">
+                        <button onclick="addRow('asset')" class="btn-text">+ 增加资产项</button>
+                        <button onclick="calculatePortfolio()" class="btn-sync">计算并同步</button>
+                    </div>
+                </div>
+
+                <div class="slider-item">
+                    <label>提取率 (SWR): <strong><span id="swrValue">4</span>%</strong></label>
+                    <input type="range" id="swrRange" min="1" max="10" value="4" step="0.5" oninput="document.getElementById('swrValue').innerText=this.value">
+                </div>
+            </section>
+
+            <section class="card">
+                <details class="nonlinear-details">
+                    <summary>📁 实际路径变数设定 (可选)</summary>
+                    <div class="nonlinear-group">
+                        <div class="section-subtitle">分阶段额外支出 (设置具体年限区间)</div>
+                        <div id="stage-list"></div>
+                        <button onclick="addRow('stage')" class="btn-ghost">+ 增加特定年限开销</button>
+                        
+                        <div class="section-subtitle">大额收支 (+为额外收入 / -为大额支出)</div>
+                        <div id="onetime-list"></div>
+                        <button onclick="addRow('onetime')" class="btn-ghost">+ 增加一次性款项数据</button>
+                    </div>
+                </details>
+            </section>
+
+            <section class="card formula-card">
+                <details>
+                    <summary>📒 计算公式说明</summary>
+                    <div class="formula-content">
+                        <div class="formula-item">
+                            <p class="formula-title">1. FIRE 目标总金额</p>
+                            <p class="formula-text">目标金额 = 退休后年开销 ÷ 提取率</p>
+                        </div>
+                        <div class="formula-item">
+                            <p class="formula-title">2. 基础路径 vs 实际路径</p>
+                            <p class="formula-text">基础路径：假定财务环境恒定，匀速积累/消耗。</p>
+                            <p class="formula-text">实际路径：考虑了你设置的大额开支、阶段性生活变动。</p>
+                        </div>
+                        <div class="formula-item">
+                            <p class="formula-title">3. 抗通胀实际收益率</p>
+                            <p class="formula-text">实际收益 = (1 + 名义收益率) ÷ (1 + 通胀率) - 1</p>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section id="result-box" class="card result-card" style="display:none;">
+                <div class="result-highlight">
+                    <div class="res-sub">FIRE 目标总金额 (购买力计)</div>
+                    <div id="targetAmount" class="res-main main-red">--</div>
+                </div>
+                <div class="result-grid">
+                    <div class="res-item">
+                        <div class="res-label" id="baseLabel">基础路径达成时间</div>
+                        <div id="baseTimeResult" class="res-val">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label" id="actualLabel">实际路径达成时间</div>
+                        <div id="actualTimeResult" class="res-val main-blue">--</div>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="fireChart"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bottom-bar">
+            <button onclick="runCoreCalculation()" class="btn-primary">生成测算结果</button>
+        </footer>
     </div>
     <script src="script.js"></script>
 </body>
