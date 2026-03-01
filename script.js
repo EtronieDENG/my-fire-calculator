@@ -1,21 +1,32 @@
 let currentTab = 'acc', myChart = null;
 
-// 1. 页签切换逻辑 [cite: 43, 58]
+// 1. 切换页签：同步更新 UI 文案 [cite: 43, 58]
 function switchTab(type) {
     currentTab = type;
     document.getElementById('tab-acc').className = type === 'acc' ? 'active' : '';
     document.getElementById('tab-end').className = type === 'end' ? 'active' : '';
     document.getElementById('saveItem').style.display = type === 'acc' ? 'flex' : 'none';
-    document.getElementById('expenseLabel').innerText = type === 'acc' ? '退休后年开销 (元)' : '当前年度总开销 (元)';
-    document.getElementById('baseLabel').innerText = type === 'acc' ? '基础路径达成时间' : '基础路径支撑时长';
-    document.getElementById('actualLabel').innerText = type === 'acc' ? '实际路径达成时间' : '实际路径支撑时长';
+    
+    // 动态切换结果区的标题文案
+    const mainResLabel = document.querySelector('.result-highlight .res-sub');
+    if (type === 'acc') {
+        document.getElementById('expenseLabel').innerText = '退休后年开销 (元)';
+        document.getElementById('baseLabel').innerText = '理论路径达成时间';
+        document.getElementById('actualLabel').innerText = '实测路径达成时间';
+        mainResLabel.innerText = 'FIRE 目标总金额 (购买力计)';
+    } else {
+        document.getElementById('expenseLabel').innerText = '当前年度总开销 (元)';
+        document.getElementById('baseLabel').innerText = '理论路径支撑时长';
+        document.getElementById('actualLabel').innerText = '实测路径支撑时长';
+        mainResLabel.innerText = '当前用于提取的总本金 (购买力计)';
+    }
 }
 
 function resetAll() {
     if(confirm("确定要清空重置所有数据吗？")) location.reload();
 }
 
-// 2. 动态添加行逻辑 [cite: 33, 68]
+// 2. 动态添加行逻辑 [cite: 33, 51, 66]
 function addRow(type) {
     const div = document.createElement('div');
     div.className = 'dynamic-row';
@@ -32,7 +43,6 @@ function addRow(type) {
     }
 }
 
-// 3. 资产配置计算同步 [cite: 73]
 function calculatePortfolio() {
     const amounts = document.getElementsByClassName('asset-amount');
     const rates = document.getElementsByClassName('asset-rate');
@@ -51,7 +61,7 @@ function calculatePortfolio() {
     }
 }
 
-// 4. 核心测算逻辑 [cite: 38, 56, 99]
+// 3. 核心计算逻辑 [cite: 38, 56, 99]
 function runCoreCalculation() {
     const nomVal = document.getElementById('nominalReturn').value;
     if (!nomVal) { alert("请在投资设定中填写「名义收益率」"); return; }
@@ -62,27 +72,31 @@ function runCoreCalculation() {
     const inf = parseFloat(document.getElementById('inflationRate').value) || 0;
     const swr = parseFloat(document.getElementById('swrRange').value) / 100;
     
-    const targetCapital = baseExp / swr;
-    document.getElementById('targetAmount').innerText = `¥${Math.round(targetCapital).toLocaleString()}`;
+    // 计算逻辑区分
+    if (currentTab === 'acc') {
+        const targetCapital = baseExp / swr;
+        document.getElementById('targetAmount').innerText = `¥${Math.round(targetCapital).toLocaleString()}`;
+    } else {
+        // 耐力模式下，上方显示当前本金金额
+        document.getElementById('targetAmount').innerText = `¥${Math.round(current).toLocaleString()}`;
+    }
 
-    // 抗通胀实际收益率公式
     const realAnnual = (1 + parseFloat(nomVal)/100) / (1 + inf/100) - 1;
     const realMonth = Math.pow(1 + realAnnual, 1/12) - 1;
 
-    // 获取非线性动态数据 [cite: 34, 35, 52, 53]
     const sS = Array.from(document.getElementsByClassName('st-start')).map(i => parseInt(i.value) || 0);
     const sE = Array.from(document.getElementsByClassName('st-end')).map(i => parseInt(i.value) || 0);
     const sX = Array.from(document.getElementsByClassName('st-exp')).map(i => parseFloat(i.value) || 0);
     const otA = Array.from(document.getElementsByClassName('ot-amt')).map(i => parseFloat(i.value) || 0);
     const otY = Array.from(document.getElementsByClassName('ot-year')).map(i => parseInt(i.value) || 0);
 
-    const baseRes = simulate(current, annualSave, baseExp, realMonth, targetCapital, false, [], [], [], [], []);
-    const actRes = simulate(current, annualSave, baseExp, realMonth, targetCapital, true, sS, sE, sX, otA, otY);
+    const targetCapitalForSim = baseExp / swr;
+    const baseRes = simulate(current, annualSave, baseExp, realMonth, targetCapitalForSim, false, [], [], [], [], []);
+    const actRes = simulate(current, annualSave, baseExp, realMonth, targetCapitalForSim, true, sS, sE, sX, otA, otY);
 
-    renderUI(baseRes, actRes, current, targetCapital);
+    renderUI(baseRes, actRes);
 }
 
-// 5. 模拟模拟核心逻辑 
 function simulate(start, aSave, baseE, rate, target, isNon, sS, sE, sX, otA, otY) {
     let bal = start, history = [Math.round(bal)], m = 0;
     if (currentTab === 'acc' && bal >= target) return { m: 0, history: [Math.round(bal)] };
@@ -96,22 +110,19 @@ function simulate(start, aSave, baseE, rate, target, isNon, sS, sE, sX, otA, otY
         }
 
         if (currentTab === 'acc') {
-            // 积累模型 [cite: 34, 35]
             bal = bal * (1 + rate) + (aSave / 12) - curNonExp + curOt;
             history.push(Math.round(bal));
             if (bal >= target) break;
         } else {
-            // 耐力模型 [cite: 52, 53]
             bal = (bal - (baseE / 12) - curNonExp + curOt) * (1 + rate);
             history.push(Math.round(bal));
-            if (bal <= 0) break;
+            if (bal <= 0) { history[history.length-1] = 0; break; }
         }
     }
     return { m, history };
 }
 
-// 6. UI 渲染与图表绘制 
-function renderUI(base, act, start, target) {
+function renderUI(base, act) {
     document.getElementById('result-box').style.display = 'block';
     const fmt = m => m === 0 ? "已达成" : `${Math.floor(m/12)}年${m%12}个月`;
     document.getElementById('baseTimeResult').innerText = fmt(base.m);
@@ -124,8 +135,8 @@ function renderUI(base, act, start, target) {
         data: {
             labels: Array.from({length: Math.max(base.history.length, act.history.length)}, (_,i) => i%12===0 ? Math.floor(i/12)+'年' : ''),
             datasets: [
-                { label: '基础路径', data: base.history, borderColor: '#d1d1d6', pointRadius: 0, borderWidth: 2, fill: false },
-                { label: '实际路径', data: act.history, borderColor: '#007aff', backgroundColor: 'rgba(0,122,255,0.05)', fill: true, pointRadius: 0, borderWidth: 3 }
+                { label: '理论路径', data: base.history, borderColor: '#d1d1d6', pointRadius: 0, borderWidth: 2, fill: false },
+                { label: '实测路径', data: act.history, borderColor: '#007aff', backgroundColor: 'rgba(0,122,255,0.05)', fill: true, pointRadius: 0, borderWidth: 3 }
             ]
         },
         options: {
