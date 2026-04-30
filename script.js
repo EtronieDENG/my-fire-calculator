@@ -14,7 +14,6 @@ function addRow(type) {
 }
 
 function runCoreCalculation() {
-    // 逻辑：如果输入为空，自动套用占位符默认值
     const startBal = parseFloat(document.getElementById('currentSavings').value) || 3000000;
     const baseExp = parseFloat(document.getElementById('annualExpense').value) || 50000;
     const roi = parseFloat(document.getElementById('nominalReturn').value) / 100 || 0;
@@ -38,10 +37,10 @@ function runCoreCalculation() {
         let extraExp = 0;
         stageInputs.forEach(st => { if (year >= st.s && year < st.s + st.d) extraExp += st.v; });
         otInputs.forEach(ot => { if (year === ot.y) currentBal += ot.v; });
+        
         currentBal = currentBal + gain - inflationExp - extraExp;
         history.push(Math.round(Math.max(0, currentBal)));
     }
-    // 计算结果展示
     const resVal = currentBal > 0 && year >= 100 ? "100+" : (year - 1 + (Math.max(0, history[history.length-2]) / (history[history.length-2] - currentBal + 0.1))).toFixed(1);
     document.getElementById('supportYears').innerText = resVal;
     renderChart(history);
@@ -56,11 +55,8 @@ function renderChart(data) {
             labels: data.map((_, i) => i % 10 === 0 ? i + '年' : ''),
             datasets: [{ data: data, borderColor: '#007aff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', tension: 0.4 }]
         },
-        options: { 
-            responsive: true, maintainAspectRatio: false, 
-            plugins: { legend: { display: false } }, 
-            scales: { x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 10 } } }, y: { display: false } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 10 } } }, y: { display: false } } }
     });
 }
-function resetAll() { if(confirm("确定要重置所有数据吗？")) location.reload(); }
+
+function resetAll() { if(confirm("确定要重置数据吗？")) location.reload(); }
