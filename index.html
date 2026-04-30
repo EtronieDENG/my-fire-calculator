@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FIRE 资金计算器</title>
-    <!-- 强制刷新缓存：版本号控制 -->
-    <link rel="stylesheet" href="style.css?v=20260430">
+    <!-- 版本号更新，强制手机浏览器刷新缓存 -->
+    <link rel="stylesheet" href="style.css?v=0501_v2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- 仪表盘：蓝色标题，结果大字居中 -->
+        <!-- 仪表盘：保持固定，方便随时查看结果变动 -->
         <header class="result-hero">
             <h1 class="app-title">FIRE 资金计算器</h1>
             <div class="hero-main">
@@ -26,7 +26,7 @@
         </header>
 
         <main class="content">
-            <!-- 1. 基础账目：例如 300万与5万 -->
+            <!-- 1. 基础账目 -->
             <section class="card">
                 <div class="card-header">🏦 基础资产与支出</div>
                 <div class="input-group">
@@ -52,7 +52,7 @@
                 </div>
             </section>
 
-            <!-- 3. 生活里程碑：支持删除 -->
+            <!-- 3. 生活里程碑 -->
             <section class="card">
                 <details class="milestone-details" open>
                     <summary>📁 生活里程碑 (人生大事规划)</summary>
@@ -68,7 +68,7 @@
                 </details>
             </section>
 
-            <!-- 4. 计算说明：纯公式化视觉 -->
+            <!-- 4. 计算说明 -->
             <section class="card note-card">
                 <div class="card-header">📝 计算说明</div>
                 <div class="formula-container">
@@ -86,14 +86,14 @@
                     </div>
                 </div>
             </section>
-        </main>
 
-        <footer class="bottom-bar">
-            <button onclick="runCoreCalculation()" class="btn-primary">开始测算</button>
-            <button onclick="resetAll()" class="btn-reset">重置数据</button>
-        </footer>
+            <!-- 操作栏：改为内容的一部分，随页面滚动，不遮挡键盘 -->
+            <div class="bottom-bar">
+                <button onclick="runCoreCalculation()" class="btn-primary">开始测算</button>
+                <button onclick="resetAll()" class="btn-reset">重置数据</button>
+            </div>
+        </main>
     </div>
-    <!-- 强制刷新缓存：版本号控制 -->
-    <script src="script.js?v=20260430"></script>
+    <script src="script.js?v=0501_v2"></script>
 </body>
 </html>
