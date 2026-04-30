@@ -1,38 +1,68 @@
 :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 110px; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
 
-.app-container { width: 100%; max-width: 500px; margin: 0 auto; }
+.app-container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 
-/* 仪表盘 */
+/* 顶部仪表盘：保持 Sticky，因为它是用户输入时的即时反馈区 */
 .result-hero { background: var(--card); padding: 25px 20px 10px; text-align: center; border-bottom: 1px solid #e5e5ea; position: sticky; top: 0; z-index: 100; }
-.app-title { font-size: 1.45rem; color: var(--primary); font-weight: 800; margin: 0 0 15px 0; }
+.app-title { font-size: 1.4rem; color: var(--primary); font-weight: 800; margin: 0 0 15px 0; }
 .hero-label { font-size: 0.85rem; color: var(--sub); margin-bottom: 5px; }
 .hero-val-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
 .hero-val { font-size: 4rem; font-weight: 800; color: #ff9500; line-height: 1; letter-spacing: -2px; }
 .hero-unit { font-size: 1.2rem; color: var(--sub); font-weight: bold; }
 .chart-container { height: 60px; margin-top: 10px; }
 
-/* 卡片布局 */
-.card { background: var(--card); border-radius: 18px; padding: 20px; margin: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+/* 卡片容器 */
+.content { flex: 1; padding: 10px 12px; }
+.card { background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .card-header { font-size: 0.95rem; font-weight: 700; margin-bottom: 18px; border-left: 5px solid var(--primary); padding-left: 12px; }
+
+/* 输入控件 */
 .input-group { display: flex; flex-direction: column; margin-bottom: 18px; }
 label { font-size: 0.8rem; color: var(--sub); margin-bottom: 8px; font-weight: 600; }
 input { border: 1px solid #e5e5ea; padding: 14px; border-radius: 12px; font-size: 1.1rem; background: #fafafa; width: 100%; }
 input::placeholder { color: #c7c7cc; }
 
-/* 动态行与删除按钮 */
 .btn-ghost { width: 100%; padding: 12px; border: 1.5px dashed #d1d1d6; background: none; border-radius: 12px; color: var(--primary); font-size: 0.85rem; margin-top: 10px; cursor: pointer; }
+
+/* 动态行管理 */
 .dynamic-row { background: #f9f9fb; padding: 15px; border-radius: 12px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; border: 1px solid #efefef; }
 .btn-delete { position: absolute; right: 10px; top: 10px; width: 24px; height: 24px; border-radius: 12px; background: #fee2e2; color: #ef4444; border: none; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* 公式美化排版 */
+/* 公式美化 */
 .formula-container { background: #f8fbff; padding: 16px; border-radius: 12px; border: 1px solid #d0e3ff; }
-.formula-line { font-size: 0.88rem; color: #3a5a8c; margin-bottom: 10px; line-height: 1.4; letter-spacing: 0.2px; }
+.formula-line { font-size: 0.88rem; color: #3a5a8c; margin-bottom: 10px; line-height: 1.4; }
 .formula-tag { color: #1c1c1e; font-weight: 700; background: #e0edff; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
-.formula-line.status { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cce0ff; color: #1c1c1e; font-weight: 600; margin-bottom: 0; }
+.formula-line.status { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cce0ff; color: #1c1c1e; font-weight: 600; }
 
-/* 底部栏 */
-.bottom-bar { position: fixed; bottom: 0; width: 100%; max-width: 500px; padding: 18px; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); display: flex; gap: 12px; border-top: 1px solid #e5e5ea; }
-.btn-primary { flex: 3; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-.btn-reset { flex: 1; background: #e5e5ea; border: none; border-radius: 16px; color: var(--text); font-weight: 600; cursor: pointer; }
+/* 重构操作栏：改为 Static 布局，随页面滚动 */
+.bottom-bar { 
+    margin: 20px 0 40px; 
+    display: flex; 
+    gap: 12px; 
+    padding: 0 4px;
+}
+
+.btn-primary { 
+    flex: 3; 
+    padding: 18px; 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    border-radius: 16px; 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,122,255,0.15); 
+}
+
+.btn-reset { 
+    flex: 1.2; 
+    background: #e5e5ea; 
+    border: none; 
+    border-radius: 16px; 
+    color: var(--text); 
+    font-weight: 600; 
+    cursor: pointer;
+}
