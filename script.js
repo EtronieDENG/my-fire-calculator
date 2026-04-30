@@ -1,22 +1,22 @@
 let myChart = null;
 
 function addRow(type) {
+    const containerId = type === 'stage' ? 'stage-list' : 'onetime-list';
     const div = document.createElement('div');
     div.className = 'dynamic-row';
+    const delBtn = `<button onclick="this.parentElement.remove();" class="btn-delete">×</button>`;
+
     if (type === 'stage') {
-        div.innerHTML = `<label>第N年起</label><input type="number" class="st-s">
-                         <label>持续年数</label><input type="number" class="st-d">
-                         <label>年额外金额</label><input type="number" class="st-v">`;
+        div.innerHTML = `<label>第N年起</label><input type="number" class="st-s"><label>持续年数</label><input type="number" class="st-d"><label>年额外支出</label><input type="number" class="st-v">${delBtn}`;
     } else {
-        div.innerHTML = `<label>金额 (+进/-出)</label><input type="number" class="ot-amt">
-                         <label>发生年份 (第N年)</label><input type="number" class="ot-year">`;
+        div.innerHTML = `<label>金额 (+进/-出)</label><input type="number" class="ot-amt"><label>发生年份</label><input type="number" class="ot-year">${delBtn}`;
     }
-    document.getElementById(type === 'stage' ? 'stage-list' : 'onetime-list').appendChild(div);
+    document.getElementById(containerId).appendChild(div);
 }
 
 function runCoreCalculation() {
-    const startBal = parseFloat(document.getElementById('currentSavings').value) || 0;
-    const baseExp = parseFloat(document.getElementById('annualExpense').value) || 0;
+    const startBal = parseFloat(document.getElementById('currentSavings').value) || 3000000;
+    const baseExp = parseFloat(document.getElementById('annualExpense').value) || 50000;
     const roi = parseFloat(document.getElementById('nominalReturn').value) / 100 || 0;
     const inf = parseFloat(document.getElementById('inflationRate').value) / 100 || 0;
 
@@ -30,7 +30,6 @@ function runCoreCalculation() {
         v: parseFloat(row.querySelector('.ot-amt').value) || 0
     }));
 
-    //  核心模拟逻辑：按年复利
     let currentBal = startBal, history = [Math.round(startBal)], year = 0;
     while (currentBal > 0 && year < 100) {
         year++;
@@ -57,10 +56,9 @@ function renderChart(data) {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{ data: data, borderColor: '#007aff', borderWidth: 3, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', tension: 0.4 }]
+            datasets: [{ data: data, borderColor: '#007aff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', tension: 0.4 }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 10 } } }, y: { display: false } } }
     });
 }
-
-function resetAll() { if(confirm("确定要清空重置吗？")) location.reload(); }
+function resetAll() { if(confirm("确定要清空吗？")) location.reload(); }
