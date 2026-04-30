@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FIRE 资金计算器</title>
-    <!-- 强制更新版本号：v5.9_full -->
-    <link rel="stylesheet" href="style.css?v=v5.9_full">
+    <link rel="stylesheet" href="style.css?v=v5.9.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- 顶部固定看板 -->
         <header class="result-hero">
             <h1 class="app-title">FIRE 资金计算器</h1>
             <div class="hero-main">
@@ -26,7 +24,6 @@
         </header>
 
         <main class="content">
-            <!-- 1. 基础账目 -->
             <section class="card">
                 <div class="card-header">🏦 基础资产与支出</div>
                 <div class="input-group">
@@ -39,7 +36,6 @@
                 </div>
             </section>
 
-            <!-- 2. 收益与通胀 -->
             <section class="card">
                 <div class="card-header">📈 钱生钱的能力</div>
                 <div class="input-group">
@@ -52,10 +48,9 @@
                 </div>
             </section>
 
-            <!-- 3. 生活里程碑 -->
             <section class="card">
                 <details class="milestone-details" open>
-                    <summary>📁 生活里程碑 (非线性收支规划)</summary>
+                    <summary>📁 生活里程碑 (非线性规划)</summary>
                     <div class="milestone-group">
                         <p class="sub-label">分阶段开销 (如养娃、房贷期间)</p>
                         <div id="stage-list"></div>
@@ -68,32 +63,31 @@
                 </details>
             </section>
 
-            <!-- 4. 计算说明：补全所有缺失公式 -->
+            <!-- 补全并美化后的公式说明 -->
             <section class="card note-card">
                 <div class="card-header">📝 计算说明</div>
                 <div class="formula-container">
                     <div class="formula-line">
-                        <span class="formula-tag">年末本金</span> = 年初本金 + 当年收益 - 实际消费 ± 变动
+                        <span class="formula-tag">年末本金</span> = 年初本金 + 当年收益 - 实际消费 ± 大事变动
                     </div>
                     <div class="formula-line">
-                        <span class="formula-tag">当年收益</span> = 年初本金 × 收益率
+                        <span class="formula-tag">当年收益</span> = 年初本金 × 投资收益率
                     </div>
                     <div class="formula-line">
-                        <span class="formula-tag">实际消费</span> = 基础消费 × (1 + 通胀率)ⁿ
+                        <span class="formula-tag">实际消费</span> = 基础消费 × (1 + 通胀率)^(n-1)
                     </div>
                     <div class="formula-line status">
-                        🏁 判定：年末本金 ≤ 0 → 模拟结束
+                        判定：年末本金 ≤ 0 时，模拟自动结束
                     </div>
                 </div>
             </section>
 
-            <!-- 操作按钮：随动布局 -->
             <div class="action-footer">
                 <button onclick="runCoreCalculation()" class="btn-primary">开始测算</button>
                 <button onclick="resetAll()" class="btn-reset">重置数据</button>
             </div>
         </main>
     </div>
-    <script src="script.js?v=v5.9_full"></script>
+    <script src="script.js?v=v5.9.1"></script>
 </body>
 </html>
