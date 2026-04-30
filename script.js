@@ -5,7 +5,6 @@ function addRow(type) {
     const div = document.createElement('div');
     div.className = 'dynamic-row';
     const delBtn = `<button onclick="this.parentElement.remove();" class="btn-delete">×</button>`;
-
     if (type === 'stage') {
         div.innerHTML = `<label>第N年起</label><input type="number" class="st-s"><label>持续年数</label><input type="number" class="st-d"><label>年额外支出</label><input type="number" class="st-v">${delBtn}`;
     } else {
@@ -15,6 +14,7 @@ function addRow(type) {
 }
 
 function runCoreCalculation() {
+    // 逻辑：如果输入为空，自动套用占位符默认值
     const startBal = parseFloat(document.getElementById('currentSavings').value) || 3000000;
     const baseExp = parseFloat(document.getElementById('annualExpense').value) || 50000;
     const roi = parseFloat(document.getElementById('nominalReturn').value) / 100 || 0;
@@ -41,7 +41,7 @@ function runCoreCalculation() {
         currentBal = currentBal + gain - inflationExp - extraExp;
         history.push(Math.round(Math.max(0, currentBal)));
     }
-
+    // 计算结果展示
     const resVal = currentBal > 0 && year >= 100 ? "100+" : (year - 1 + (Math.max(0, history[history.length-2]) / (history[history.length-2] - currentBal + 0.1))).toFixed(1);
     document.getElementById('supportYears').innerText = resVal;
     renderChart(history);
@@ -63,5 +63,4 @@ function renderChart(data) {
         }
     });
 }
-
 function resetAll() { if(confirm("确定要重置所有数据吗？")) location.reload(); }
